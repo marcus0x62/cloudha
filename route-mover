@@ -1,0 +1,41 @@
+#!/usr/bin/python
+#
+# route-mover -- Associate a subnet with a new route table in AWS
+# Created: Marcus Butler <mbutler@paloaltonetworks.com>, 05-April-2017.
+#
+
+from boto3 import client
+from botocore.exceptions import ClientError
+import sys
+
+def get_rtb_assoc(subnet):
+    ec2 = client('ec2')
+    res = ec2.describe_route_tables()
+
+    for table in res['RouteTables']:
+        for assoc in table['Associations']:
+            if assoc.has_key('SubnetId') and assoc['SubnetId'] == subnet:
+                return assoc['RouteTableAssociationId']
+
+    return None
+
+def change_route(old_assoc, rtb):
+    ec2 = client('ec2')
+    res = ec2.replace_route_table_association(AssociationId = old_assoc,
+                                              RouteTableId = rtb)
+
+    return True
+
+if len(sys.argv) != 3:
+   print("Usage: route-mover <subnet-id> <route-table-id>")
+   sys.exit()
+
+rtb_assoc = get_rtb_assoc(sys.argv[1])
+
+if change_route(rtb_assoc, sys.argv[2]):
+    print("Successfully changed route table for " + sys.argv[1])
+else:
+    print("Error changing route table for " + sys.argv[1])
+
+
+
