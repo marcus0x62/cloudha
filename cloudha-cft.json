@@ -180,11 +180,14 @@
     }
   },
   "Outputs": {
-      "ApiId": {
-	  "Value": {"Ref": "CloudHARestApi"}
+      "ApiURL": {
+	  "Value": {"Fn::Join": [ "", [ "https://", {"Ref": "CloudHARestApi"}, ".execute-api.",
+					{"Ref": "AWS::Region"}, ".amazonaws.com/prod/cloudha"]]},
+	  "Description": "This is the URL to which you should send API requests"
       },
       "ApiKey": {
-	  "Value": {"Ref": "CloudHAApiKey"}
+	  "Value": {"Ref": "CloudHAApiKey"},
+	  "Description": "This is the API key name.  You can use it to retrieve the key value."
       }
   }
 }
