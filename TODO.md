@@ -1,4 +1,5 @@
-* Cloud Formation Template for service deployment.
+* S3 bucket and filename for config should be specified as part of the CFT and
+  learned via a runtime parameter of some sort.
 
 * Better error handling
 
