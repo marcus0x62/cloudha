@@ -27,6 +27,14 @@ def change_rtb(old_assoc, rtb):
 
     return True
 
+def get_config(bucket, file):
+    s3 = client('s3')
+
+    obj = s3.get_object(Bucket=bucket, Key=file)
+    dict = json.loads(obj['Body'].read())
+
+    return dict
+
 def fatal_error(errmsg):
     return {
             'statusCode': 500,
