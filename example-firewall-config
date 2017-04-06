@@ -14,7 +14,7 @@ set network virtual-router default routing-table ip static-route "Monitor" desti
 set network virtual-router default routing-table ip static-route "Monitor" route-table unicast 
 
 set shared log-settings http AWS_HA_Down server AWS-API-Gateway address XXX_YOUR_API_GATEWAY_HOST__XXX
-set shared log-settings http AWS_HA_Down server AWS-API-Gateway http-method GET
+set shared log-settings http AWS_HA_Down server AWS-API-Gateway http-method POST
 set shared log-settings http AWS_HA_Down server AWS-API-Gateway protocol HTTPS
 set shared log-settings http AWS_HA_Down server AWS-API-Gateway port 443
 set shared log-settings http AWS_HA_Down format system name "AWS HA Down"
@@ -23,7 +23,7 @@ set shared log-settings http AWS_HA_Down format system headers x-api-key value X
 set shared log-settings http AWS_HA_Down format system params serial value XXX_PEER_FW_SERIAL_NUMBER_XXX
 set shared log-settings http AWS_HA_Down format system params action value down
 set shared log-settings http AWS_HA_Up server AWS-API-Gateway address XXX_YOUR_API_GATEWAY_HOST_XXX
-set shared log-settings http AWS_HA_Up server AWS-API-Gateway http-method GET
+set shared log-settings http AWS_HA_Up server AWS-API-Gateway http-method POST
 set shared log-settings http AWS_HA_Up server AWS-API-Gateway protocol HTTPS
 set shared log-settings http AWS_HA_Up server AWS-API-Gateway port 443
 set shared log-settings http AWS_HA_Up format system name "AWS HA Up"
