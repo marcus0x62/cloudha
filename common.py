@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # common.py -- Methods used by the cloud-ha scripts.
-# Created: Marcus Butler <marcusb@marcusb.org>, 05-April-2017.
+# Created: Marcus Butler, 05-April-2017.
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
