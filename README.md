@@ -48,3 +48,6 @@ Installation
    The API key can be retrieved with:
 
    aws apigateway get-api-key --api-key [api-key-id] --include-value
+9. Configure your firewalls to monitor the appropriate IP address(s) and
+   trigger the Lambda service when a failure occurs (see example-firewall-config for config details.)
+
