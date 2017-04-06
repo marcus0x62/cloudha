@@ -9,30 +9,11 @@
 # Created: Marcus Butler <marcusb@marcusb.org>, 05-April-2017.
 #
 
-from common import fatal_error, get_rtb_assoc, change_rtb
+from common import fatal_error, get_rtb_assoc, change_rtb, get_config
 import json
 
-config_data = """
-{
-    "firewalls": {
-        "007955000014636": [
-            {
-                "subnet": "subnet-e5462982",
-                "healthyRouteTable": "rtb-2e788348",
-                "sickRouteTable": "rtb-75dd1913"
-            }
-        ],
-
-        "007955000014636": [
-            {
-                "subnet": "subnet-e5462982",
-                "healthyRouteTable": "rtb-2e788348",
-                "sickRouteTable": "rtb-75dd1913"
-            }
-        ]
-    }   
-}
-"""
+CONFIG_BUCKET='mbutler-cloudha-config'
+CONFIG_FILE='config.json'
 
 def up(config, serial):
     status = ""
@@ -86,7 +67,7 @@ def lambda_handler(event, context):
     else:
         action = event['queryStringParameters']['action']
 
-    config = json.loads(config_data)
+    config = get_config(CONFIG_BUCKET, CONFIG_FILE)
 
     if not config['firewalls'].has_key(serial):
         return fatal_error("Firewall serial number not found in configuration")
