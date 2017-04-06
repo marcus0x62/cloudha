@@ -77,7 +77,7 @@
 		"S3Key": {"Ref": "S3Key"}
             },
             "Description": "CloudHA for Palo Alto Networks virtual firewalls",
-            "Handler": "cloudha.handler",
+            "Handler": "cloudha.lambda_handler",
             "MemorySize": 128,
             "Role": {"Fn::GetAtt": ["CloudHALambdaRole", "Arn"]},
             "Runtime": "python2.7",
@@ -110,23 +110,81 @@
 		"CloudHARestApi",
 		"RootResourceId"
 	    ]},
-	    "PathPart": "{proxy+}"
+	    "PathPart": "cloudha"
 	}
     },
 
     "CloudHAProxyResourceANY": {
 	"Type": "AWS::ApiGateway::Method",
 	"Properties": {
+	    "ApiKeyRequired": true,
 	    "RestApiId": {"Ref":"CloudHARestApi"},
 	    "ResourceId": {"Ref":"CloudHAProxyResource"},
 	    "HttpMethod": "ANY",
 	    "AuthorizationType": "NONE",
 	    "Integration": {
 		"Type": "AWS_PROXY",
-		"IntegrationHttpMethod": "GET",
+		"IntegrationHttpMethod": "POST",
 		"Uri": { "Fn::Sub":"arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CloudHALambda.Arn}/invocations"}
 	    }
 	}
-    }      
+    },
+
+    "CloudHADeployment": {
+	"Type": "AWS::ApiGateway::Deployment",
+	"Properties": {
+	    "RestApiId": { "Ref": "CloudHARestApi" },
+	    "Description": "CloudHA Deployment",
+	    "StageName": "prod"
+	},
+	"DependsOn": "CloudHAProxyResourceANY"
+    },
+
+    "CloudHAUsagePlan": {
+	"Type" : "AWS::ApiGateway::UsagePlan",
+	"Properties" : {
+	    "ApiStages" : [ {"ApiId" : { "Ref" : "CloudHARestApi" }, "Stage" : "prod" } ],
+	    "Description" : "CloudHA Usage Plan",
+	    "Quota" : {
+		"Limit" : 5000,
+		"Period" : "MONTH"
+	    },
+	    "Throttle" : {
+		"BurstLimit" : 200,
+		"RateLimit" : 100
+	    },
+	    "UsagePlanName" : "CloudHAUsagePlan"
+	},
+	"DependsOn": "CloudHADeployment"
+    },
+      
+    "CloudHAApiKey": {
+	"Type": "AWS::ApiGateway::ApiKey",
+	"DependsOn": "CloudHAUsagePlan",
+	"Properties": {
+	    "Name": "CloudHAApiKey",
+	    "Description": "API Key to access CloudHA service",
+	    "Enabled": true,
+	    "StageKeys": [ {"RestApiId": {"Ref": "CloudHARestApi"}, "StageName": "prod"} ]
+	}
+    },
+
+    "CloudHAUsagePlanKey": {
+	"Type": "AWS::ApiGateway::UsagePlanKey",
+	"DependsOn": "CloudHAApiKey",
+	"Properties": {
+	    "KeyId": {"Ref": "CloudHAApiKey"},
+	    "KeyType": "API_KEY",
+	    "UsagePlanId": {"Ref": "CloudHAUsagePlan"}
+	}
+    }
+  },
+  "Outputs": {
+      "ApiId": {
+	  "Value": {"Ref": "CloudHARestApi"}
+      },
+      "ApiKey": {
+	  "Value": {"Ref": "CloudHAApiKey"}
+      }
   }
 }
