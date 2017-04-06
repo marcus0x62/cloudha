@@ -1,0 +1,19 @@
+{
+    "firewalls": {
+        "007955000014636": [
+            {
+                "subnet": "subnet-e5462982",
+                "healthyRouteTable": "rtb-2e788348",
+                "sickRouteTable": "rtb-75dd1913"
+            }
+        ],
+
+        "007955000014683": [
+            {
+                "subnet": "subnet-e5462982",
+                "healthyRouteTable": "rtb-2e788348",
+                "sickRouteTable": "rtb-75dd1913"
+            }
+        ]
+    }   
+}
