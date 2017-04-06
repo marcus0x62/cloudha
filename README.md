@@ -19,3 +19,32 @@ triggering another Lambda call to switch the route table associations to their
 normal values.  The configuration for each firewall, its subnets, and the
 sick/healthy route tables, are configured in a JSON-formatted file stored in
 S3.
+
+Installation
+------------
+0. Prerequisites
+ * AWS CLI tools
+ * Git client
+ * At least two firewalls in AWS running PAN-OS 8.0 or later
+1. Clone the git repository -- 'git clone https://github.com/marcus0x62/cloudha'
+2. Create an S3 bucket with 'aws s3 cb <bucket_name>'
+3. Edit cloudha.py and modify the CLOUDHA_BUCKET variable with the name of the
+   S3 bucket you created.
+4. Edit the example-config.json file and enter your firewall serial numbers,
+   and the healthy and sick route tables for those firewalls.
+5. Build the cloudha.zip file either by running 'make', or
+   'zip cloudha.zip clouldha.py common.py'
+6. Copy the config file and deployment package to S3 with
+   'aws s3 cp config.json s3://<bucket-name>/config.json' and
+   'aws s3 cp cloudha.zip s3://<bucket-name>/cloudha.zip'
+7. Deploy the CFT with 'aws cloudformation create-stack --stack-name cloudha --template-body file://cloudha-cft.json --parameters ParameterKey=S3Bucket,ParameterValue=<bucket-name> ParameterKey=S3Key,ParameterValue=cloudha.zip --capabilities CAPABILITY_IAM'.  This is going to create a Lambda service, an API
+   Gateway endpoint, an IAM role for the Lambda service, as well as a few other
+   things.  Please be sure to review the Cloudformation Template to ensure you
+   are comfortable with the resources being created, the costs from AWS of
+   those resources, and the security specified in the CFT.
+8. After the stack is deployed, you can retrieve the API endpoint and key:
+   aws cloudformation describe-stacks --stack-name cloudha (look for "Outputs")
+
+   The API key can be retrieved with:
+
+   aws apigateway get-api-key --api-key <api-key-id> --include-value
