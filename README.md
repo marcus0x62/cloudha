@@ -20,6 +20,8 @@ normal values.  The configuration for each firewall, its subnets, and the
 sick/healthy route tables, are configured in a JSON-formatted file stored in
 S3.
 
+![Normal Operation](docs/cloudha-normal.png) ![Failover](docs/cloudha-failed.png)
+
 Installation
 ------------
 0. Prerequisites
