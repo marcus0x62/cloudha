@@ -1,3 +1,5 @@
+set network virtual-router default routing-table ip static-route "Monitor" nexthop ip-address 172.16.2.1
+set network virtual-router default routing-table ip static-route "Monitor" interface ethernet1/2
 set network virtual-router default routing-table ip static-route "Monitor" path-monitor monitor-destinations "Internal" enable yes
 set network virtual-router default routing-table ip static-route "Monitor" path-monitor monitor-destinations "Internal" source DHCP
 set network virtual-router default routing-table ip static-route "Monitor" path-monitor monitor-destinations "Internal" destination XXX_PEER_FIREWALL_IP_XXX
@@ -6,9 +8,7 @@ set network virtual-router default routing-table ip static-route "Monitor" path-
 set network virtual-router default routing-table ip static-route "Monitor" path-monitor enable yes
 set network virtual-router default routing-table ip static-route "Monitor" path-monitor failure-condition any
 set network virtual-router default routing-table ip static-route "Monitor" path-monitor hold-time 2
-set network virtual-router default routing-table ip static-route "Monitor" nexthop ip-address 172.16.2.1
 set network virtual-router default routing-table ip static-route "Monitor" bfd profile None
-set network virtual-router default routing-table ip static-route "Monitor" interface ethernet1/2
 set network virtual-router default routing-table ip static-route "Monitor" metric 10
 set network virtual-router default routing-table ip static-route "Monitor" destination 1.1.1.1/32
 set network virtual-router default routing-table ip static-route "Monitor" route-table unicast 
