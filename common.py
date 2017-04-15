@@ -155,22 +155,23 @@ def check_availability(config, chk_group=None):
 
             failed_devices = 0
             total_devices  = 0
-            
+
+            DEBUG(DBG_INFO, "Checking group %s with failover mode %s" % (group, group_failover_mode))
             for device in config['groups'][group]['devices']:
-                device_name = device.keys()[0]
+                device_name = device['name']
                 total_devices += 1
 
-                if device[device_name].has_key('failover-mode'):
-                    device_failover_mode = device[device_name]['failover-mode']
+                if device.has_key('failover-mode'):
+                    device_failover_mode = device['failover-mode']
                 else:
                     device_failover_mode = 'any'
                     
-                DEBUG(DBG_INFO, "Checking group %s with failover mode %s" % (device_name, group_failover_mode))
+                DEBUG(DBG_INFO, "Checking device %s with failover mode %s" % (device_name, device_failover_mode))
 
                 total_addresses = 0
                 failed_addresses = 0
                 
-                for address in device[device_name]['addresses']:
+                for address in device['addresses']:
                     total_addresses += 1
                     
                     if address.has_key('test'):
@@ -250,19 +251,19 @@ def check_availability(config, chk_group=None):
                     else:
                         DEBUG(DBG_ERROR, '*** ERROR *** Unsupported test %s specified' % ip)
 
-            if device_failover_mode == 'all' and failed_addresses == total_addresses:
-                failed_devices += 1
-                DEBUG(DBG_TRACE, '*** ERROR *** All tests FAILED for device %s' % device_name)
-            elif device_failover_mode == 'any' and failed_addresses > 0:
-                failed_devices += 1
-                DEBUG(DBG_TRACE, '*** ERROR *** Some tests FAILED for device %s' % device_name)
-            else:
-                DEBUG(DBG_TRACE, 'ALL TESTS for device %s PASSED' % device.keys()[0])
+                if device_failover_mode == 'all' and failed_addresses == total_addresses:
+                    failed_devices += 1
+                    DEBUG(DBG_TRACE, '*** ERROR *** All tests FAILED for device %s' % device_name)
+                elif device_failover_mode == 'any' and failed_addresses > 0:
+                    failed_devices += 1
+                    DEBUG(DBG_TRACE, '*** ERROR *** Some tests FAILED for device %s' % device_name)
+                else:
+                    DEBUG(DBG_TRACE, 'ALL TESTS for device %s PASSED' % device_name)
 
         if group_failover_mode == 'all' and failed_devices == total_devices:
             DEBUG(DBG_TRACE, "Setting failure for group %s in mode all (%d:%d)" % (group, failed_devices, total_devices))
             failed_groups.append(group)
-        elif failed_devices > 0:
+        elif group_failover_mode == 'any' and failed_devices > 0:
             DEBUG(DBG_TRACE, "Setting failure for group %s in mode any" % group)
             failed_groups.append(group)
             

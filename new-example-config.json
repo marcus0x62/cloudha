@@ -1,28 +1,46 @@
 {
     "groups": {
         "workspace-2a": {
-            "failover-mode": "all",
+            "failover-mode": "any",
             "devices": [
 		{
-                    "fw-workspace-2a": {
-			"failover-mode": "any",
-                        "addresses": [
-                            {
-                                "ip": "192.168.1.10",
-                                "test": "tcp_ping",
-                                "count": 1,
-                                "failure": 1,
-                                "port": 80
-                            },
-                            {
-                                "url": "https://192.168.1.4",
-                                "test": "http_ping",
-                                "count": 1,
-                                "failure": 1,
-                                "port": 443
-                            }
-                        ]
-		    }
+                    "name": "fw-workspace-2a",
+		    "failover-mode": "any",
+                    "addresses": [
+                        {
+                            "ip": "192.168.1.10",
+                            "test": "tcp_ping",
+                            "count": 1,
+                            "failure": 1,
+                            "port": 80
+                        },
+                        {
+                            "url": "https://192.168.1.1/",
+                            "test": "http_ping",
+                            "count": 1,
+                            "failure": 1,
+                            "port": 443
+                        }
+                    ]
+		}, {
+		    "name": "vpn-workspace-2a",
+		    "failover-mode": "any",
+                    "addresses": [
+                        {
+                            "ip": "192.168.1.3",
+                            "test": "tcp_ping",
+                            "count": 1,
+                            "failure": 1,
+                            "port": 22
+                        },
+                        {
+                            "url": "https://192.168.1.1/",
+                            "test": "http_ping",
+                            "count": 1,
+                            "failure": 1,
+                            "port": 443
+                        }
+                    ]
 		}
 	    ],
             "route-tables": [
@@ -42,24 +60,23 @@
             "failover-mode": "any",
             "devices": [
 		{
-                    "fw-workspace-2b": {
-                        "addresses": [
-                            {
-                                "ip": "192.168.1.10",
-                                "test": "tcp_ping",
-                                "count": 3,
-                                "failure": 1,
-                                "port": 80
-                            },
-                            {
-                                "ip": "192.168.1.1",
-                                "test": "tcp_ping",
-                                "count": 2,
-                                "failure": 1,
-                                "port": 443
-                            }
-                        ]
-		    }
+                    "name": "fw-workspace-2b",
+                    "addresses": [
+                        {
+                            "ip": "192.168.1.10",
+                            "test": "tcp_ping",
+                            "count": 3,
+                            "failure": 1,
+                            "port": 80
+                        },
+                        {
+                            "ip": "192.168.1.1",
+                            "test": "tcp_ping",
+                            "count": 2,
+                            "failure": 1,
+                            "port": 443
+                        }
+                    ]
 		}
 	    ],
             "route-tables": [
