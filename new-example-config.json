@@ -1,6 +1,7 @@
 {
     "groups": {
         "workspace-2a": {
+	    "peer-group": "workspace-2b",
             "failover-mode": "any",
             "devices": [
 		{
@@ -57,6 +58,7 @@
         },
 	
         "workspace-2b": {
+	    "peer-group": "workspace-2a",
             "failover-mode": "any",
             "devices": [
 		{

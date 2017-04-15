@@ -147,16 +147,16 @@ def check_availability(config, chk_group=None):
     failed_groups = []
 
     for group in config['groups']:
+        if config['groups'][group].has_key('failover-mode'):
+            group_failover_mode = config['groups'][group]['failover-mode']
+        else:
+            group_failover_mode = 'any'
+
+        failed_devices = 0
+        total_devices = 0
         if not chk_group or group == chk_group:
-            if config['groups'][group].has_key('failover-mode'):
-                group_failover_mode = config['groups'][group]['failover-mode']
-            else:
-                group_failover_mode = 'any'
-
-            failed_devices = 0
-            total_devices  = 0
-
             DEBUG(DBG_INFO, "Checking group %s with failover mode %s" % (group, group_failover_mode))
+
             for device in config['groups'][group]['devices']:
                 device_name = device['name']
                 total_devices += 1

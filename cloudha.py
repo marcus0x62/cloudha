@@ -32,7 +32,7 @@ def up(config, group):
     status = ""
     # Logic:
     # 1) Verify group in config file
-    # 2) Verify group is down
+    # 2) Verify group is up
     # 3) Modify routes if group is up
 
     if not config['groups'].has_key(group):
@@ -67,7 +67,8 @@ def down(config, group):
     # Logic:
     # 1) Verify group in config file
     # 2) Verify group is down
-    # 3) Modify routes if group is down
+    # 3) Verify peer device is up
+    # 3) Modify routes if group is down and peer device is up
 
     if not config['groups'].has_key(group):
         return {
@@ -77,6 +78,23 @@ def down(config, group):
         }
 
     if group in check_availability(config, group):
+        if config['groups'][group].has_key('peer-group'):
+            peer_group = config['groups'][group]['peer-group']
+
+            if not config['groups'].has_key(peer_group):
+                return {
+                    'statusCode': 500,
+                    'headers': {'Content-Type': 'application/json'},
+                    'body': json.dumps({'status': 'Peer group %s for group %s does not exist' % (peer_group, group)})
+                }
+
+        if peer_group in check_availability(config, peer_group):
+            return {
+                'statusCode': 500,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'status': 'Cannot switch routes for %s: peer group %s down' % (group, peer_group)})
+            }
+        
         for table in config['groups'][group]['route-tables']:
             rtb = table['route-table']
             print "Changing %s to DOWN ROUTES" % table
