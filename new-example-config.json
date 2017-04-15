@@ -1,7 +1,7 @@
 {
     "groups": {
         "workspace-2a": {
-            "failover-mode": "any",
+            "failover-mode": "all",
             "devices": [
 		{
                     "fw-workspace-2a": {
@@ -14,8 +14,8 @@
                                 "port": 80
                             },
                             {
-                                "ip": "192.168.1.1",
-                                "test": "ssl_ping",
+                                "url": "https://192.168.1.4",
+                                "test": "http_ping",
                                 "count": 1,
                                 "failure": 1,
                                 "port": 443
