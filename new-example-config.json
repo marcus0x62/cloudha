@@ -5,6 +5,7 @@
             "devices": [
 		{
                     "fw-workspace-2a": {
+			"failover-mode": "any",
                         "addresses": [
                             {
                                 "ip": "192.168.1.10",
