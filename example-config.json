@@ -1,19 +1,98 @@
 {
-    "firewalls": {
-        "007955000014636": [
-            {
-                "subnet": "subnet-e5462982",
-                "healthyRouteTable": "rtb-2e788348",
-                "sickRouteTable": "rtb-75dd1913"
-            }
-        ],
-
-        "007955000014683": [
-            {
-                "subnet": "subnet-e5462982",
-                "healthyRouteTable": "rtb-2e788348",
-                "sickRouteTable": "rtb-75dd1913"
-            }
-        ]
-    }   
+    "groups": {
+        "workspace-2a": {
+	    "peer-group": "workspace-2b",
+            "failover-mode": "any",
+            "devices": [
+		{
+                    "name": "fw-workspace-2a",
+		    "failover-mode": "any",
+                    "addresses": [
+                        {
+                            "ip": "192.168.1.10",
+                            "test": "tcp_ping",
+                            "count": 2,
+                            "failure": 1,
+                            "port": 80
+                        },
+                        {
+                            "url": "https://192.168.1.1/",
+                            "test": "http_ping",
+                            "count": 1,
+                            "failure": 1,
+                            "port": 443
+                        }
+                    ]
+		}, {
+		    "name": "vpn-workspace-2a",
+		    "failover-mode": "any",
+                    "addresses": [
+                        {
+                            "ip": "192.168.1.3",
+                            "test": "tcp_ping",
+                            "count": 1,
+                            "failure": 1,
+                            "port": 22
+                        },
+                        {
+                            "url": "https://192.168.1.1/",
+                            "test": "http_ping",
+                            "count": 1,
+                            "failure": 1,
+                            "port": 443
+                        }
+                    ]
+		}
+	    ],
+            "route-tables": [
+                {
+                    "route-table": "rtb-2e788348",
+                    "routes": [
+                        { "route": "0.0.0.0/0",
+                          "healthyENI": "eni-3c74844e",
+                          "sickENI": "eni-9bd09ade"
+                        }
+                    ]
+                }
+            ]
+        },
+	
+        "workspace-2b": {
+	    "peer-group": "workspace-2a",
+            "failover-mode": "any",
+            "devices": [
+		{
+                    "name": "fw-workspace-2b",
+                    "addresses": [
+                        {
+                            "ip": "192.168.1.10",
+                            "test": "tcp_ping",
+                            "count": 3,
+                            "failure": 1,
+                            "port": 80
+                        },
+                        {
+                            "ip": "192.168.1.1",
+                            "test": "tcp_ping",
+                            "count": 2,
+                            "failure": 1,
+                            "port": 443
+                        }
+                    ]
+		}
+	    ],
+            "route-tables": [
+                {
+                    "route-table": "rtb-75dd1913",
+                    "routes": [
+                        {
+                            "route": "0.0.0.0/0",
+                            "healthyENI": "eni-9bd09ade",
+                            "sickENI": "eni-3c74844e"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
 }
