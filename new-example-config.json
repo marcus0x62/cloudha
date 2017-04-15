@@ -14,29 +14,29 @@
                                 "port": 80
                             },
                             {
-                                "ip": "192.168.1.100",
+                                "ip": "192.168.1.1",
                                 "test": "ssl_ping",
                                 "count": 1,
                                 "failure": 1,
                                 "port": 443
                             }
-                        ],
-                        "route-tables": [
-                            {
-                                "route-table": "rtb-2e788348",
-                                "routes": [
-                                    { "route": "0.0.0.0/0",
-                                      "healthENI": "eni-3c74844e",
-                                      "sickENI": "eni-9bd09ade"
-                                    }
-                                ]
-                            }
                         ]
-                    }
+		    }
+		}
+	    ],
+            "route-tables": [
+                {
+                    "route-table": "rtb-2e788348",
+                    "routes": [
+                        { "route": "0.0.0.0/0",
+                          "healthyENI": "eni-3c74844e",
+                          "sickENI": "eni-9bd09ade"
+                        }
+                    ]
                 }
             ]
         },
-
+	
         "workspace-2b": {
             "failover-mode": "any",
             "devices": [
@@ -57,20 +57,20 @@
                                 "failure": 1,
                                 "port": 443
                             }
-                        ],
-                        "route-tables": [
-                            {
-                                "route-table": "rtb-75dd1913",
-                                "routes": [
-                                    {
-                                        "route": "0.0.0.0/0",
-                                        "healthENI": "eni-9bd09ade",
-                                        "sickENI": "eni-3c74844e"
-                                    }
-                                ]
-                            }
                         ]
-                    }
+		    }
+		}
+	    ],
+            "route-tables": [
+                {
+                    "route-table": "rtb-75dd1913",
+                    "routes": [
+                        {
+                            "route": "0.0.0.0/0",
+                            "healthyENI": "eni-9bd09ade",
+                            "sickENI": "eni-3c74844e"
+                        }
+                    ]
                 }
             ]
         }

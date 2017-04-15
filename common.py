@@ -53,10 +53,12 @@ def change_rtb(old_assoc, rtb):
 def modify_route(rtb, dest, eni):
     ec2 = client('ec2')
     try:
-        ec2.replace_route(RouteTableId = rtb, DestinationCidrBlock = dest, NetworkInterfaceId = eni)
+        ec2.replace_route(RouteTableId = rtb, DestinationCidrBlock = dest,
+                          NetworkInterfaceId = eni)
     except ClientError as e:
-        DEBUG(DBG_ERROR, "Unable to replace route %s on rtb %s to eni %s (error: %s)" %
-                  (dest, rtb, eni, repr(e.response)))
+        DEBUG(DBG_ERROR,
+              "Unable to replace route %s on rtb %s to eni %s (error: %s)" %
+              (dest, rtb, eni, repr(e.response)))
         return False
     return True
 
@@ -84,7 +86,7 @@ def check_tcp_ping(ip, port):
 
 def check_ssl_ping(ip, port):
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    context.verify_mode = ssl.CERT_NONE
+    context.verify_mode = ssl.CERT_NONE # Do not attempt to validate certs
 
     s = context.wrap_socket(socket(AF_INET))
     s.settimeout(3)
@@ -100,15 +102,16 @@ def check_ssl_ping(ip, port):
     return True
 
 #
-# check_availability -- Check the status of one or more hosts.
+# check_availability -- Check the status of one or more failover groups.
 # Arguments:
 #   config -- Configuration dictionary as returned by get_config
-#   host   -- Optional argument that specifies the host to check.  If set to None, all hosts in the config
-#             dictionary are checked.
+#   group  -- Optional argument that specifies the group to check.  If set to
+#             None, all groups in the config dictionary are checked.
 #
-# Return Value -- a list containing all hosts that failed their test condition(s).
+# Return Value -- a list containing all groups that failed their test
+#                 condition(s).
 #
-def check_availability(config, host):
+def check_availability(config, chk_group):
     if config is None:
         DEBUG(DBG_ERROR, 'Config not passed!')
         return False
@@ -117,13 +120,13 @@ def check_availability(config, host):
         DEBUG(DBG_ERROR, 'Config does not have groups key!')
         return False
 
-    failed_hosts = []
+    failed_groups = []
 
     for group in config['groups']:
-        for device in config['groups'][group]['devices']:
-            failed = False
+        if not chk_group or group == chk_group:
+            for device in config['groups'][group]['devices']:
+                failed = False
 
-            if not host or device.has_key(host):
                 DEBUG(DBG_INFO, "Checking " + repr(device.keys()))
                 for address in device[device.keys()[0]]['addresses']:
                     ip      = address['ip']
@@ -154,12 +157,12 @@ def check_availability(config, host):
                     else:
                         DEBUG(DBG_ERROR, '*** ERROR *** Unsupported test %s specified' % ip)
             if failed == True:
-                failed_hosts.append(device.keys()[0])
+                failed_groups.append(group)
                 DEBUG(DBG_TRACE, '*** ERROR *** One or more tests FAILED for device %s' % device.keys()[0])
             else:
                 DEBUG(DBG_TRACE, 'ALL TESTS for device %s PASSED' % device.keys()[0])
 
-    return failed_hosts
+    return failed_groups
 
 def fatal_error(errmsg):
     return {

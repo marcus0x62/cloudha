@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# cloudha.py -- Lambda service that provides stateless failover for Palo Alto
-#               Networks firewalls deployed in AWS.  The firewall pair must be
-#               deployed within a single region and VPC, but can span
-#               availability zones.  It works by modifying the route table(s)
-#               associated with one or more subnets.
+# cloudha.py -- Lambda service that provides stateless failover for devices
+#               deployed in AWS.  The devices be deployed within a single VPC,
+#               but may span availability zones.  This service works by
+#               modifying one or more route table entries, as specified in a
+#               configuration file stored in S3.
 #
 # Created: Marcus Butler, 05-April-2017.
 #
@@ -22,22 +22,38 @@
 #
 
 from common import fatal_error, get_rtb_assoc, change_rtb, get_config
+from common import check_availability, modify_route
 import json
 
 CONFIG_BUCKET='mbutler-cloudha-config'
 CONFIG_FILE='config.json'
 
-def up(config, serial):
+def up(config, group):
     status = ""
+    # Logic:
+    # 1) Verify group in config file
+    # 2) Verify group is down
+    # 3) Modify routes if group is up
 
-    for subnet in config['firewalls'][serial]:
-        subnet_id = subnet['subnet']
-        rtb       = subnet['healthyRouteTable']
-        rtb_assoc = get_rtb_assoc(subnet_id)
+    if not config['groups'].has_key(group):
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'status': 'Group %s does not exist' % group})
+        }
 
-        change_rtb(rtb_assoc, rtb)
-        status = status + "Changed route table for " + subnet_id + " " + \
-                 "to " + rtb + "\n"
+    if group not in check_availability(config, group):
+        for table in config['groups'][group]['route-tables']:
+            rtb = table['route-table']
+            print "Changing %s to UP ROUTES" % table
+            for route in table['routes']:
+                print "Modifying %s:%s to %s" % (rtb, route['route'], route['healthyENI'])
+                if not modify_route(rtb, route['route'], route['healthyENI']):
+                    return {
+                        'statusCode': 500,
+                        'headers': {'Content-Type': 'application/json'},
+                        'body': json.dumps({'status': 'Unable to change route %s:%s to %s' % ( rtb, route['route'], route['sickENI'])})
+                    }
 
     return {
             'statusCode': 200,
@@ -45,17 +61,33 @@ def up(config, serial):
             'body': json.dumps({'status': status})
     }
 
-def down(config, serial):
+def down(config, group):
     status = ""
 
-    for subnet in config['firewalls'][serial]:
-        subnet_id = subnet['subnet']
-        rtb       = subnet['sickRouteTable']
-        rtb_assoc = get_rtb_assoc(subnet_id)
+    # Logic:
+    # 1) Verify group in config file
+    # 2) Verify group is down
+    # 3) Modify routes if group is down
 
-        change_rtb(rtb_assoc, rtb)
-        status = status + "Changed route table for " + subnet_id + " " + \
-                 "to " + rtb + "\n"
+    if not config['groups'].has_key(group):
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'status': 'Group %s does not exist' % group})
+        }
+
+    if group in check_availability(config, group):
+        for table in config['groups'][group]['route-tables']:
+            rtb = table['route-table']
+            print "Changing %s to DOWN ROUTES" % table
+            for route in table['routes']:
+                print "Modifying %s:%s to %s" % (rtb, route['route'], route['sickENI'])
+                if not modify_route(rtb, route['route'], route['sickENI']):
+                    return {
+                        'statusCode': 500,
+                        'headers': {'Content-Type': 'application/json'},
+                        'body': json.dumps({'status': 'Unable to change route %s:%s to %s' % ( rtb, route['route'], route['sickENI'])})
+                    }
 
     return {
             'statusCode': 200,
