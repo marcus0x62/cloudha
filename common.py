@@ -149,23 +149,29 @@ def check_availability(config, chk_group=None):
     for group in config['groups']:
         if not chk_group or group == chk_group:
             if config['groups'][group].has_key('failover-mode'):
-                failover_mode = config['groups'][group]['failover-mode']
+                group_failover_mode = config['groups'][group]['failover-mode']
             else:
-                failover_mode = 'any'
+                group_failover_mode = 'any'
 
-            # FIXME -- there needs to be any/all failover logic at the device group and address level...
-            # as it stands now, this implementation doesn't work correctly for either case.
             failed_devices = 0
             total_devices  = 0
             
             for device in config['groups'][group]['devices']:
                 device_name = device.keys()[0]
+                total_devices += 1
 
-                DEBUG(DBG_INFO, "Checking %s with failover mode %s" % (device_name, failover_mode))
+                if device[device_name].has_key('failover-mode'):
+                    device_failover_mode = device[device_name]['failover-mode']
+                else:
+                    device_failover_mode = 'any'
+                    
+                DEBUG(DBG_INFO, "Checking group %s with failover mode %s" % (device_name, group_failover_mode))
+
+                total_addresses = 0
+                failed_addresses = 0
+                
                 for address in device[device_name]['addresses']:
-                    failed = False
-
-                    total_devices += 1
+                    total_addresses += 1
                     
                     if address.has_key('test'):
                         test = address['test']
@@ -214,7 +220,7 @@ def check_availability(config, chk_group=None):
                                 DEBUG(DBG_TRACE, 'tcp_ping SUCCEEDED for %s:%s' % (ip, port))
 
                         if failures >= failure:
-                            failed = True                            
+                            failed_addresses += 1
                     elif test == 'ssl_ping':
                         DEBUG(DBG_TRACE, 'Running ssl_ping for %s' % ip)
 
@@ -227,7 +233,7 @@ def check_availability(config, chk_group=None):
                                 DEBUG(DBG_TRACE, 'ssl_ping SUCCEEDED for %s: %s' % (ip, port))
 
                         if failures >= failure:
-                            failed = True
+                            failed_addresses += 1
                     elif test == 'http_ping':
                         DEBUG(DBG_TRACE, 'Running http_ping for %s' % url)
 
@@ -240,16 +246,20 @@ def check_availability(config, chk_group=None):
                                 DEBUG(DBG_TRACE, 'http_ping SUCCEEDED for %s' % url)
 
                         if failures >= failure:
-                            failed = True
+                            failed_addresses += 1
                     else:
                         DEBUG(DBG_ERROR, '*** ERROR *** Unsupported test %s specified' % ip)
-            if failed == True:
+
+            if device_failover_mode == 'all' and failed_addresses == total_addresses:
                 failed_devices += 1
-                DEBUG(DBG_TRACE, '*** ERROR *** One or more tests FAILED for device %s' % device.keys()[0])
+                DEBUG(DBG_TRACE, '*** ERROR *** All tests FAILED for device %s' % device_name)
+            elif device_failover_mode == 'any' and failed_addresses > 0:
+                failed_devices += 1
+                DEBUG(DBG_TRACE, '*** ERROR *** Some tests FAILED for device %s' % device_name)
             else:
                 DEBUG(DBG_TRACE, 'ALL TESTS for device %s PASSED' % device.keys()[0])
 
-        if failover_mode == 'all' and failed_devices == total_devices:
+        if group_failover_mode == 'all' and failed_devices == total_devices:
             DEBUG(DBG_TRACE, "Setting failure for group %s in mode all (%d:%d)" % (group, failed_devices, total_devices))
             failed_groups.append(group)
         elif failed_devices > 0:
